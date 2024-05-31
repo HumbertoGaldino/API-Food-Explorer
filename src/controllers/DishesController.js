@@ -36,7 +36,7 @@ class DishesController {
   }
 
   // METHOD TO FETCH A DISH BY ID
-  async index(request, response) {
+  async show(request, response) {
     const { id } = request.params;
 
     const dish = await knex("dishes").where({ id }).first();
@@ -52,6 +52,56 @@ class DishesController {
       ...dish,
       ingredients,
     });
+  }
+
+  // METHOD TO LIST DISHES WITH OPTIONAL SEARCH
+  async index(request, response) {
+    const { search } = request.query;
+
+    let dishesQuery = knex("dishes")
+      .select(["id", "name", "description", "category", "price", "image"])
+      .orderBy("name");
+
+    if (search) {
+      const keywords = search.split(" ").map((keyword) => `%${keyword}%`);
+
+      dishesQuery = dishesQuery
+        .leftJoin("ingredients", "dishes.id", "ingredients.dish_id")
+        .where((builder) => {
+          builder.where((subBuilder) => {
+            keywords.forEach((keyword) => {
+              subBuilder.orWhere("name", "like", keyword);
+              subBuilder.orWhere("description", "like", keyword);
+            });
+          });
+          keywords.forEach((keyword) => {
+            builder.orWhere("ingredients.name", "like", keyword);
+          });
+        })
+        .groupBy("id"); // Agrupando apenas pela coluna id
+    }
+
+    try {
+      const dishes = await dishesQuery;
+      const ingredients = await knex("ingredients");
+
+      const dishesWithIngredients = dishes.map((dish) => {
+        const dishIngredients = ingredients.filter(
+          (ingredient) => ingredient.dish_id === dish.id
+        );
+
+        return {
+          ...dish,
+          ingredients: dishIngredients,
+        };
+      });
+
+      return response.json(dishesWithIngredients);
+    } catch (error) {
+      console.error("Erro ao listar pratos:", error);
+
+      return response.status(500).json({ error: "Erro interno do servidor" });
+    }
   }
 
   // METHOD TO DELETE A DISH BY ID
@@ -116,55 +166,6 @@ class DishesController {
     await knex("dishes").where({ id }).update(updateData);
 
     return response.json({ message: "Dish updated successfully!" });
-  }
-
-  // METHOD TO LIST DISHES WITH OPTIONAL SEARCH
-  async listDishes(request, response) {
-    const { search } = request.query;
-    let dishesQuery = knex("dishes")
-      .select([
-        "dishes.id",
-        "dishes.name",
-        "dishes.description",
-        "dishes.category",
-        "dishes.price",
-        "dishes.image",
-      ])
-      .orderBy("dishes.name");
-
-    if (search) {
-      const keywords = search.split(" ").map((keyword) => `%${keyword}%`);
-      dishesQuery = dishesQuery
-        .leftJoin("ingredients", "dishes.id", "ingredients.dish_id")
-        .where((builder) => {
-          builder.where((subBuilder) => {
-            keywords.forEach((keyword) => {
-              subBuilder.orWhere("dishes.name", "like", keyword);
-              subBuilder.orWhere("dishes.description", "like", keyword);
-            });
-          });
-          keywords.forEach((keyword) => {
-            builder.orWhere("ingredients.name", "like", keyword);
-          });
-        })
-        .groupBy("dishes.id");
-    }
-
-    const dishes = await dishesQuery;
-    const ingredients = await knex("ingredients");
-
-    const dishesWithIngredients = dishes.map((dish) => {
-      const dishIngredients = ingredients.filter(
-        (ingredient) => ingredient.dish_id === dish.id
-      );
-
-      return {
-        ...dish,
-        ingredients: dishIngredients,
-      };
-    });
-
-    return response.json(dishesWithIngredients);
   }
 }
 
