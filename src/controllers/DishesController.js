@@ -3,7 +3,6 @@ const DiskStorage = require("../providers/DiskStorage");
 const AppError = require("../utils/AppError");
 
 class DishesController {
-  // METHOD TO CREATE A NEW DISH
   async create(request, response) {
     const { name, description, category, price, ingredients } = request.body;
     const imageFile = request.file.filename;
@@ -32,10 +31,9 @@ class DishesController {
 
     await knex("ingredients").insert(ingredientsData);
 
-    return response.json({ message: "Dish created successfully!" });
+    return response.json({ message: "Prato criado com sucesso!" });
   }
 
-  // METHOD TO FETCH A DISH BY ID
   async show(request, response) {
     const { id } = request.params;
 
@@ -54,13 +52,19 @@ class DishesController {
     });
   }
 
-  // METHOD TO LIST DISHES WITH OPTIONAL SEARCH
   async index(request, response) {
     const { search } = request.query;
 
     let dishesQuery = knex("dishes")
-      .select(["id", "name", "description", "category", "price", "image"])
-      .orderBy("name");
+      .select([
+        "dishes.id",
+        "dishes.name",
+        "dishes.description",
+        "dishes.category",
+        "dishes.price",
+        "dishes.image",
+      ]) // Prefixando com o nome da tabela para evitar ambiguidade
+      .orderBy("dishes.name"); // Prefixando com o nome da tabela
 
     if (search) {
       const keywords = search.split(" ").map((keyword) => `%${keyword}%`);
@@ -70,15 +74,15 @@ class DishesController {
         .where((builder) => {
           builder.where((subBuilder) => {
             keywords.forEach((keyword) => {
-              subBuilder.orWhere("name", "like", keyword);
-              subBuilder.orWhere("description", "like", keyword);
+              subBuilder.orWhere("dishes.name", "like", keyword); // Prefixando com o nome da tabela
+              subBuilder.orWhere("dishes.description", "like", keyword); // Prefixando com o nome da tabela
             });
           });
           keywords.forEach((keyword) => {
             builder.orWhere("ingredients.name", "like", keyword);
           });
         })
-        .groupBy("id"); // Agrupando apenas pela coluna id
+        .groupBy("dishes.id"); // Prefixando com o nome da tabela
     }
 
     try {
@@ -104,7 +108,6 @@ class DishesController {
     }
   }
 
-  // METHOD TO DELETE A DISH BY ID
   async delete(request, response) {
     const { id } = request.params;
 
@@ -119,7 +122,6 @@ class DishesController {
     return response.json({ message: "Dish deleted successfully!" });
   }
 
-  // METHOD TO UPDATE A DISH BY ID
   async update(request, response) {
     const { id } = request.params;
     const { name, description, category, price, ingredients } = request.body;
