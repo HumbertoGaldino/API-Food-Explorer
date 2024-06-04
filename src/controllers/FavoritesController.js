@@ -5,9 +5,6 @@ class FavoritesController {
     const { dish_id } = request.params;
     const user_id = request.user.id;
 
-    console.log(dish_id);
-    console.log(user_id);
-
     try {
       const favorite = await knex("favorites").insert({
         user_id,
