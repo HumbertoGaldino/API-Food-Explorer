@@ -79,7 +79,7 @@ class CartsController {
     const user_id = request.user.id;
 
     const carts = await knex("carts")
-      .select("id", "created_at")
+      .select("id", "user_id")
       .where({ user_id: user_id })
       .orderBy("created_at", "desc");
 
@@ -91,6 +91,14 @@ class CartsController {
 
     await knex("cart_items").where({ cart_id: id }).delete();
     await knex("carts").where({ id }).delete();
+
+    return response.json();
+  }
+
+  async deleteItem(request, response) {
+    const { id, dish_id } = request.params;
+
+    await knex("cart_items").where({ cart_id: id, dish_id: dish_id }).delete();
 
     return response.json();
   }
