@@ -73,9 +73,9 @@ Este projeto foi construído utilizando as seguintes tecnologias
 
 <h2 id="como-usar">💡 Como Usar</h2>
 
-O back-end do projeto está hospedado no endereço <a href="" target="_blank">aqui</a>. 
+O back-end do projeto está hospedado no endereço <a href="https://api-food-explorer-5hcc.onrender.com" target="_blank">aqui</a>. 
 
-A aplicação Food Explorer está disponível para uso <a href="" target="_blank">aqui</a>. 
+A aplicação Food Explorer está disponível para uso <a href="https://food-explorer-humberto.netlify.app/" target="_blank">aqui</a>. 
 <br>
 <br>
 <p>
