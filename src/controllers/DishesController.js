@@ -114,12 +114,14 @@ class DishesController {
     const dish = await knex("dishes").where({ id }).first();
 
     if (!dish) {
-      throw new AppError("Dish not found.", 404);
+      throw new AppError("Prato não encontrado.", 404);
     }
+
+    await knex("cart_items").where({ dish_id: id }).delete();
 
     await knex("dishes").where({ id }).delete();
 
-    return response.json({ message: "Dish deleted successfully!" });
+    return response.json({ message: "Prato excluído com sucesso!" });
   }
 
   async update(request, response) {
@@ -167,7 +169,7 @@ class DishesController {
 
     await knex("dishes").where({ id }).update(updateData);
 
-    return response.json({ message: "Dish updated successfully!" });
+    return response.json({ message: "Prato atualizado com sucesso!" });
   }
 }
 
