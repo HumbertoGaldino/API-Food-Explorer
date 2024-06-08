@@ -67,6 +67,8 @@ Este projeto foi construído utilizando as seguintes tecnologias
 <li>Multer</li>
 <li>SQLite</li>
 <li>SQLite3</li>
+<li>dotenv</li>
+<li>PM2</li>
 <br>
 
 <h2 id="como-usar">💡 Como Usar</h2>
